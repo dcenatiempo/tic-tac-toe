@@ -21,10 +21,14 @@ var win = [
   [ 0, 4, 8 ], [ 2, 4, 6 ] ];             // diagonal win
 
 // initialize game
-function reset(){
+function reset() {
   $("#game-over").hide();
-
-  $("#screen").html('<h2>Choose your mark:</h2><div class="intel-cont"><button id="l1" class="xo x">X</button><button id="l3" class="xo o">O</button></div>');
+  $("#screen").html(
+    '<h2>Choose your mark:</h2>' +
+    '<div class="intel-cont">' +
+      '<button id="l1" class="xo x">X</button><button id="l3" class="xo o">O</button>' +
+    '</div>'
+  );
 
   board = [ null, null, null, null, null, null, null, null, null ] ;
 
@@ -33,17 +37,17 @@ function reset(){
     createBoard();
   });
 
-  $(".o").click(function(){
+  $(".o").click(function() {
     human = 1;
     createBoard();
-    setTimeout(function(){
+    setTimeout(function() {
       assignCell(nextMove(board));
     },500);
   });
 }
 
 // given board b, returns whos turn it currently is: 0 or 1
-function whosTurn (b) { 
+function whosTurn(b) { 
   var count = 0;
   for ( var i=0; i < b.length; i++ ) {
     if( b[i] === null )
@@ -54,7 +58,7 @@ function whosTurn (b) {
 }
 
 // returns an array of empty spaces on board
-function actions (b) {
+function actions(b) {
   var array = [];
   for ( var i=0; i<b.length; i++){
     if (b[i] == null)
@@ -64,15 +68,59 @@ function actions (b) {
 }
 
 // returns new game board state after action a is taken
-function results (b, a) {
+function results(b, a) {
   var newBoard = b.map(function(item){ return item;});
   newBoard.splice(a, 1, whosTurn(b));
   return newBoard
 }
+/*********************************************************************************
+* algorithm behind AI https://en.wikipedia.org/wiki/Minimax
+* minimax()
+* utility()
+* terminal()
+*********************************************************************************/
 
+/*************************************************************
+* minimax()
+* AI algorithm for two player zero sum games comprised of
+* decision rules for minimizing the possible loss for a
+* worst case (maximum loss) scenario.
+*************************************************************/
+function minimax(b, depth = 0) {
+  if (depth >= intel){ // only go as deep as inteligence
+    return utility(b, human);}
+  if (terminal(b))
+    return utility(b, human);
+  else if (whosTurn(b) == human){
 
-// returns utility of board b for player p
-function utility (b, p) {
+    var aArray = actions(b);
+    var aNew;
+    var aMax = -1000;
+    for (var i=0; i<aArray.length; i++){
+      aNew = minimax(results(b, aArray[i]), depth+1);
+      if (aNew > aMax)
+        aMax = aNew;
+    }
+    return aMax;
+  }
+  else if (whosTurn(b) != human){
+    var bArray = actions(b);
+    var bNew;
+    var bMin = 1000;
+    for (var i=0; i<bArray.length; i++){
+      bNew = minimax(results(b, bArray[i]), depth+1);
+      if (bNew < bMin)
+        bMin = bNew;
+    }
+    return bMin
+  }
+}
+
+/*************************************************************
+* utility()
+* returns utility of board b for player p
+*************************************************************/
+function utility(b, p) {
   var tCount = 0; // total number of occupied squares
   var pCount = 0; // counter for player p squares
   var nCount = 0; // counter for empty/null squares
@@ -127,7 +175,10 @@ function utility (b, p) {
   return utility;
 }
 
-// returns true if game is over
+/*************************************************************
+* terminal()
+* determines if the game is in a terminal state
+*************************************************************/
 function terminal(b) {
   var u = utility(b, human);
   if (u === 0)
@@ -136,37 +187,9 @@ function terminal(b) {
     return true;
   else return false;
 }
-
-// algorithm behind AI https://en.wikipedia.org/wiki/Minimax
-function minimax(b, depth = 0) {
-  if (depth >= intel){ // only go as deep as inteligence
-    return utility(b, human);}
-  if (terminal(b))
-    return utility(b, human);
-  else if (whosTurn(b) == human){
-
-    var aArray = actions(b);
-    var aNew;
-    var aMax = -1000;
-    for (var i=0; i<aArray.length; i++){
-      aNew = minimax(results(b, aArray[i]), depth+1);
-      if (aNew > aMax)
-        aMax = aNew;
-    }
-    return aMax;
-  }
-  else if (whosTurn(b) != human){
-    var bArray = actions(b);
-    var bNew;
-    var bMin = 1000;
-    for (var i=0; i<bArray.length; i++){
-      bNew = minimax(results(b, bArray[i]), depth+1);
-      if (bNew < bMin)
-        bMin = bNew;
-    }
-    return bMin
-  }
-}
+/*********************************************************************************
+* end minimax algorithm
+*********************************************************************************/
 
 // picks random empty cell
 function randCell(b) {
@@ -215,16 +238,21 @@ function nextMove(b) {
 }
 
 function createBoard(){
-  $("#screen").html('<div class="board"><div id="0" class="cell"></div><div id="1" class="cell"></div><div id="2" class="cell"></div><div id="3" class="cell"></div><div id="4" class="cell"></div><div id="5" class="cell"></div><div id="6" class="cell"></div><div id="7" class="cell"></div><div id="8" class="cell"></div></div>');
+  $("#screen").html(
+    '<div class="board">' +
+      '<div id="0" class="cell"></div><div id="1" class="cell"></div><div id="2" class="cell"></div>' +
+      '<div id="3" class="cell"></div><div id="4" class="cell"></div><div id="5" class="cell"></div>' +
+      '<div id="6" class="cell"></div><div id="7" class="cell"></div><div id="8" class="cell"></div>' +
+    '</div>');
   turnOnBoard();
 }
 
-function assignCell (cell){
+function assignCell(cell){
   drawCell(cell);
   board[cell] = whosTurn(board);
 }
 
-function drawCell (cell) {
+function drawCell(cell) {
   $("#" + cell).text(player[whosTurn(board)]);
 }
 function turnOnBoard() {
@@ -247,7 +275,7 @@ function turnOnBoard() {
   });
 }
 
-function endGame(result){
+function endGame(result) {
   $("#game-over").show();
   if (result == 2){
     $("#message").text('Draw');
@@ -270,7 +298,7 @@ function turnOffBoard(){
   $(".cell").off();
 }
 
-function isWinner (b) {
+function isWinner(b) {
   var playa = Math.abs(whosTurn(b)-1);
   var util = utility(b, playa);
   if (util == 100){
