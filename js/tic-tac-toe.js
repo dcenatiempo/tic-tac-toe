@@ -279,15 +279,15 @@ function endGame(result) {
   $("#game-over").show();
   if (result == 2){
     $("#message").text('Draw');
-    $("#game-over").css("background-color", "#7575a350");
+    $("#game-over").css("background-color", "rgba(140, 140, 140, .5)");
   }
   else if (result == human){
     $("#message").text('You Win!');
-    $("#game-over").css("background-color", "#33cc3350");
+    $("#game-over").css("background-color", "rgba(71, 209, 71, .5)");
   }
   else {
     $("#message").text('You Lose!');
-    $("#game-over").css("background-color", "#cc330050");	
+    $("#game-over").css("background-color", "rgba(255, 71, 26, .5)");	
   }
   setTimeout(function(){
     reset();
